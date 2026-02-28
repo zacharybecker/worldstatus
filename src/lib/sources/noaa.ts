@@ -36,11 +36,12 @@ export async function fetchNOAAAlerts(): Promise<WorldEvent[]> {
         id: string;
         properties: Record<string, unknown>;
         geometry: { type: string; coordinates: number[] | number[][][] } | null;
-      }): WorldEvent => {
+      }): WorldEvent | null => {
         const props = feature.properties;
 
-        let lat = 39.8283;
-        let lng = -98.5795;
+        let lat = 0;
+        let lng = 0;
+        let hasGeometry = false;
 
         if (feature.geometry && feature.geometry.coordinates) {
           const coords = feature.geometry.coordinates;
@@ -51,6 +52,7 @@ export async function fetchNOAAAlerts(): Promise<WorldEvent[]> {
           ) {
             lng = coords[0] as number;
             lat = coords[1] as number;
+            hasGeometry = true;
           } else if (
             feature.geometry.type === 'Polygon' &&
             Array.isArray(coords) &&
@@ -66,9 +68,13 @@ export async function fetchNOAAAlerts(): Promise<WorldEvent[]> {
               }
               lng = sumLng / ring.length;
               lat = sumLat / ring.length;
+              hasGeometry = true;
             }
           }
         }
+
+        // Skip alerts without any geometry — they can't be placed on the globe
+        if (!hasGeometry) return null;
 
         const description = (props.description as string) ?? '';
         const truncated =
@@ -77,7 +83,7 @@ export async function fetchNOAAAlerts(): Promise<WorldEvent[]> {
             : description;
 
         return {
-          id: crypto.randomUUID(),
+          id: `noaa-${feature.id}`,
           source: 'noaa',
           sourceId: String(feature.id),
           category: 'weather',
@@ -103,7 +109,7 @@ export async function fetchNOAAAlerts(): Promise<WorldEvent[]> {
           ingestedAt: now,
         };
       },
-    );
+    ).filter((e: WorldEvent | null): e is WorldEvent => e !== null);
   } catch (err) {
     console.error('Failed to fetch NOAA alerts:', err);
     return [];

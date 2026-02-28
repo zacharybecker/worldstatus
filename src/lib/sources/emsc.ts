@@ -33,7 +33,7 @@ export async function fetchEMSCEarthquakes(): Promise<WorldEvent[]> {
         const depth = feature.geometry.coordinates[2] ?? 0;
 
         return {
-          id: crypto.randomUUID(),
+          id: `emsc-${props.source_id ?? feature.id}`,
           source: 'emsc',
           sourceId: String(props.source_id ?? feature.id),
           category: 'earthquake',

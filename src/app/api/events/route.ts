@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
 
     const categoriesParam = searchParams.get('categories');
-    const severityMin = parseInt(searchParams.get('severity_min') ?? '1', 10);
-    const severityMax = parseInt(searchParams.get('severity_max') ?? '5', 10);
+    const severityMin = parseInt(searchParams.get('severityMin') ?? searchParams.get('severity_min') ?? '1', 10);
+    const severityMax = parseInt(searchParams.get('severityMax') ?? searchParams.get('severity_max') ?? '5', 10);
     const sinceParam = searchParams.get('since');
     const limit = parseInt(searchParams.get('limit') ?? '500', 10);
 

@@ -133,14 +133,17 @@ function parseRSSItems(
   while ((match = itemRegex.exec(xml)) !== null) {
     const content = match[1];
     const title =
-      content.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/)?.[1] ??
-      content.match(/<title>(.*?)<\/title>/)?.[1] ??
+      content.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/)?.[1] ??
+      content.match(/<title>([\s\S]*?)<\/title>/)?.[1] ??
       '';
-    const link = content.match(/<link>(.*?)<\/link>/)?.[1] ?? '';
-    const pubDate = content.match(/<pubDate>(.*?)<\/pubDate>/)?.[1] ?? '';
+    const link =
+      content.match(/<link>([\s\S]*?)<\/link>/)?.[1]?.trim() ??
+      content.match(/<link\s+href="([^"]*)"/)?.[1] ??
+      '';
+    const pubDate = content.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1] ?? '';
     const description =
-      content.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/)?.[1] ??
-      content.match(/<description>(.*?)<\/description>/)?.[1] ??
+      content.match(/<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/)?.[1] ??
+      content.match(/<description>([\s\S]*?)<\/description>/)?.[1] ??
       '';
 
     if (title) {
@@ -172,7 +175,7 @@ export async function fetchRSSNews(): Promise<WorldEvent[]> {
           if (!coords) return null;
 
           return {
-            id: crypto.randomUUID(),
+            id: `rss-${feed.name.toLowerCase().replace(/\s+/g, '_')}-${item.link}`,
             source: feed.name.toLowerCase().replace(/\s+/g, '_'),
             sourceId: item.link,
             category: extractCategory(item.title),

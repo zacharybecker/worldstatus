@@ -45,38 +45,26 @@ export default function NewsTicker() {
     );
   }
 
-  const items = tickerEvents.map((event) => (
-    <button
-      key={event.id}
-      onClick={() => flyToEvent(event)}
-      className={`inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap border-none bg-transparent px-2 py-1 text-xs text-[var(--foreground)] transition-opacity hover:opacity-100 ${
-        event.severity >= 4 ? 'breaking-pulse rounded opacity-100' : 'opacity-70'
-      }`}
-    >
-      <span>{CATEGORY_ICONS[event.category]}</span>
-      <span>{truncate(event.title, 60)}</span>
-      <span className="opacity-40">{timeAgo(event.eventTime)}</span>
-    </button>
-  ));
-
-  const divider = (
-    <span
-      key="div"
-      className="inline-block px-2 text-xs"
-      style={{ color: 'var(--accent-cyan)', opacity: 0.4 }}
-    >
-      ●
-    </span>
-  );
-
-  const renderItems = () => {
+  const renderItems = (prefix: string) => {
     const elements: React.ReactNode[] = [];
-    items.forEach((item, i) => {
-      elements.push(item);
-      if (i < items.length - 1) {
+    tickerEvents.forEach((event, i) => {
+      elements.push(
+        <button
+          key={`${prefix}-${event.id}`}
+          onClick={() => flyToEvent(event)}
+          className={`inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap border-none bg-transparent px-2 py-1 text-xs text-[var(--foreground)] transition-opacity hover:opacity-100 ${
+            event.severity >= 4 ? 'breaking-pulse rounded opacity-100' : 'opacity-70'
+          }`}
+        >
+          <span>{CATEGORY_ICONS[event.category]}</span>
+          <span>{truncate(event.title, 60)}</span>
+          <span className="opacity-40">{timeAgo(event.eventTime)}</span>
+        </button>
+      );
+      if (i < tickerEvents.length - 1) {
         elements.push(
           <span
-            key={`div-${i}`}
+            key={`${prefix}-div-${i}`}
             className="inline-block px-2 text-xs"
             style={{ color: 'var(--accent-cyan)', opacity: 0.4 }}
           >
@@ -110,9 +98,14 @@ export default function NewsTicker() {
       />
 
       <div className="ticker-animate flex h-full items-center">
-        {renderItems()}
-        {divider}
-        {renderItems()}
+        {renderItems('a')}
+        <span
+          className="inline-block px-2 text-xs"
+          style={{ color: 'var(--accent-cyan)', opacity: 0.4 }}
+        >
+          ●
+        </span>
+        {renderItems('b')}
       </div>
     </div>
   );

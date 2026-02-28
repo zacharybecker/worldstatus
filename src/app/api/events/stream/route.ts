@@ -20,20 +20,14 @@ export async function GET(_request: NextRequest) {
         controller.enqueue(encoder.encode(': heartbeat\n\n'));
       };
 
+      let lastEventIds = new Set<string>();
       try {
         const initialEvents = await fetchAllSources();
         send('initial', { events: initialEvents, count: initialEvents.length });
+        lastEventIds = new Set(initialEvents.map((e) => `${e.source}:${e.sourceId ?? e.id}`));
       } catch (err) {
         console.error('SSE initial fetch error:', err);
         send('error', { message: 'Failed to load initial events' });
-      }
-
-      let lastEventIds = new Set<string>();
-      try {
-        const events = await fetchAllSources();
-        lastEventIds = new Set(events.map((e) => e.id));
-      } catch {
-        // ignore
       }
 
       heartbeatInterval = setInterval(sendHeartbeat, 15000);
@@ -41,8 +35,8 @@ export async function GET(_request: NextRequest) {
       pollInterval = setInterval(async () => {
         try {
           const events = await fetchAllSources();
-          const currentIds = new Set(events.map((e) => e.id));
-          const newEvents = events.filter((e) => !lastEventIds.has(e.id));
+          const currentIds = new Set(events.map((e) => `${e.source}:${e.sourceId ?? e.id}`));
+          const newEvents = events.filter((e) => !lastEventIds.has(`${e.source}:${e.sourceId ?? e.id}`));
 
           if (newEvents.length > 0) {
             send('update', { events: newEvents, count: newEvents.length });

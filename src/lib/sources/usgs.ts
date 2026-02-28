@@ -33,7 +33,7 @@ export async function fetchUSGSEarthquakes(): Promise<WorldEvent[]> {
         const depth = feature.geometry.coordinates[2] ?? 0;
 
         return {
-          id: crypto.randomUUID(),
+          id: `usgs-${feature.id}`,
           source: 'usgs',
           sourceId: String(feature.id),
           category: 'earthquake',

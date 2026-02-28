@@ -59,7 +59,7 @@ export default function GlobeScene() {
     }
   }, [flyToTarget, clearFlyTarget]);
 
-  // Set up bloom post-processing after globe mounts
+  // Set up bloom post-processing once after globe mounts
   useEffect(() => {
     if (!globeRef.current) return;
 
@@ -80,7 +80,7 @@ export default function GlobeScene() {
         composer.addPass(renderPass);
 
         const bloomPass = new UnrealBloomPass(
-          new THREE.Vector2(dimensions.width, dimensions.height),
+          new THREE.Vector2(window.innerWidth, window.innerHeight),
           1.5,  // strength
           0.4,  // radius
           0.1   // threshold
@@ -110,7 +110,8 @@ export default function GlobeScene() {
       }
       composerRef.current = null;
     };
-  }, [dimensions.width, dimensions.height]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Update bloom composer size on resize
   useEffect(() => {

@@ -92,8 +92,8 @@ export const useEventStore = create<EventStore>((set) => ({
 
   addEvents: (newEvents) =>
     set((state) => {
-      const existingIds = new Set(state.events.map((e) => e.id));
-      const unique = newEvents.filter((e) => !existingIds.has(e.id));
+      const existingKeys = new Set(state.events.map((e) => `${e.source}:${e.sourceId ?? e.id}`));
+      const unique = newEvents.filter((e) => !existingKeys.has(`${e.source}:${e.sourceId ?? e.id}`));
       const events = [...state.events, ...unique];
       const filteredEvents = applyFilters(events, state.filters);
       return {

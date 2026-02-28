@@ -56,7 +56,7 @@ export async function fetchNASAEvents(): Promise<WorldEvent[]> {
         const eventTime = latestGeo?.date ?? now;
 
         return {
-          id: crypto.randomUUID(),
+          id: `nasa-${event.id}`,
           source: 'nasa_eonet',
           sourceId: String(event.id),
           category: mapCategory(categoryTitle),

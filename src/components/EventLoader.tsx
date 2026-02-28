@@ -12,8 +12,14 @@ export default function EventLoader() {
       setLoading(true);
       try {
         const res = await fetch('/api/events');
+        if (!res.ok) {
+          console.error(`Events API returned ${res.status}`);
+          return;
+        }
         const data = await res.json();
-        setEvents(data.events ?? data);
+        if (data.events) {
+          setEvents(data.events);
+        }
       } catch (err) {
         console.error('Failed to fetch events:', err);
       } finally {

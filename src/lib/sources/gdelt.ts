@@ -23,48 +23,60 @@ export async function fetchGDELTEvents(): Promise<WorldEvent[]> {
       (feature: {
         properties: Record<string, unknown>;
         geometry: { coordinates: number[] };
-      }): WorldEvent => {
-        const props = feature.properties;
-        const goldstein = props.GoldsteinScale as number | undefined;
+      }): WorldEvent | null => {
+        try {
+          const props = feature.properties;
+          const goldstein = props.GoldsteinScale as number | undefined;
 
-        let category: EventCategory = 'news';
-        let severity = 2;
+          let category: EventCategory = 'news';
+          let severity = 2;
 
-        if (goldstein !== undefined && goldstein < -7) {
-          category = 'conflict';
-          severity = 4;
-        } else if (goldstein !== undefined && goldstein < -5) {
-          severity = 3;
+          if (goldstein !== undefined && goldstein < -7) {
+            category = 'conflict';
+            severity = 4;
+          } else if (goldstein !== undefined && goldstein < -5) {
+            severity = 3;
+          }
+
+          let name = (props.name as string) ?? '';
+          if (!name && props.url) {
+            try {
+              name = new URL(props.url as string).hostname;
+            } catch {
+              name = 'Unknown event';
+            }
+          }
+          if (!name) name = 'Unknown event';
+
+          const urlStr = (props.url as string) ?? '';
+          const sourceId = urlStr || `${feature.geometry.coordinates[1]}_${feature.geometry.coordinates[0]}_${name}`;
+
+          return {
+            id: `gdelt-${sourceId}`,
+            source: 'gdelt',
+            sourceId,
+            category,
+            severity,
+            title: name,
+            summary: undefined,
+            locationName: undefined,
+            latitude: feature.geometry.coordinates[1],
+            longitude: feature.geometry.coordinates[0],
+            metadata: {
+              goldsteinScale: goldstein,
+              domain: props.domain,
+              sharingimage: props.urlsocialimage,
+            },
+            url: urlStr || undefined,
+            eventTime: now,
+            ingestedAt: now,
+          };
+        } catch (err) {
+          console.error('Failed to parse GDELT event:', err);
+          return null;
         }
-
-        const name =
-          (props.name as string) ??
-          (props.url
-            ? new URL(props.url as string).hostname
-            : 'Unknown event');
-
-        return {
-          id: crypto.randomUUID(),
-          source: 'gdelt',
-          sourceId: (props.urlsocialimage as string) ?? crypto.randomUUID(),
-          category,
-          severity,
-          title: name,
-          summary: undefined,
-          locationName: undefined,
-          latitude: feature.geometry.coordinates[1],
-          longitude: feature.geometry.coordinates[0],
-          metadata: {
-            goldsteinScale: goldstein,
-            domain: props.domain,
-            sharingimage: props.urlsocialimage,
-          },
-          url: (props.url as string) ?? undefined,
-          eventTime: now,
-          ingestedAt: now,
-        };
       },
-    );
+    ).filter((e: WorldEvent | null): e is WorldEvent => e !== null);
   } catch (err) {
     console.error('Failed to fetch GDELT events:', err);
     return [];
