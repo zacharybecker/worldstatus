@@ -1,7 +1,7 @@
 import type { EventCategory, WorldEvent } from '@/types/event';
 
 const NASA_EONET_URL =
-  'https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=50';
+  'https://eonet.gsfc.nasa.gov/api/v3/events?days=30';
 
 function mapCategory(eonetCategory: string): EventCategory {
   switch (eonetCategory) {

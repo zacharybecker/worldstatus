@@ -2,11 +2,22 @@ import { fetchUSGSEarthquakes } from './usgs';
 import { fetchNOAAAlerts } from './noaa';
 import { fetchNASAEvents } from './nasa';
 import { fetchGDELTEvents } from './gdelt';
+import { fetchEMSCEarthquakes } from './emsc';
+import { fetchRSSNews } from './rss';
 import type { WorldEvent } from '@/types/event';
 
 let cachedEvents: WorldEvent[] = [];
 let cacheTimestamp = 0;
 const CACHE_TTL_MS = 60_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms),
+    ),
+  ]);
+}
 
 function dedup(events: WorldEvent[]): WorldEvent[] {
   const seen = new Set<string>();
@@ -25,10 +36,12 @@ export async function fetchAllSources(): Promise<WorldEvent[]> {
   }
 
   const results = await Promise.allSettled([
-    fetchUSGSEarthquakes(),
-    fetchNOAAAlerts(),
-    fetchNASAEvents(),
-    fetchGDELTEvents(),
+    withTimeout(fetchUSGSEarthquakes(), 10_000, 'USGS'),
+    withTimeout(fetchNOAAAlerts(), 10_000, 'NOAA'),
+    withTimeout(fetchNASAEvents(), 10_000, 'NASA'),
+    withTimeout(fetchGDELTEvents(), 10_000, 'GDELT'),
+    withTimeout(fetchEMSCEarthquakes(), 10_000, 'EMSC'),
+    withTimeout(fetchRSSNews(), 10_000, 'RSS'),
   ]);
 
   const allEvents: WorldEvent[] = [];

@@ -1,7 +1,7 @@
 import type { EventCategory, WorldEvent } from '@/types/event';
 
 const GDELT_URL =
-  'https://api.gdeltproject.org/api/v2/geo/geo?query=&mode=PointData&format=GeoJSON&timespan=1440&maxpoints=100';
+  'https://api.gdeltproject.org/api/v2/geo/geo?query=world&mode=PointData&format=GeoJSON&timespan=60&maxpoints=100';
 
 export async function fetchGDELTEvents(): Promise<WorldEvent[]> {
   try {
@@ -14,7 +14,12 @@ export async function fetchGDELTEvents(): Promise<WorldEvent[]> {
     const data = await res.json();
     const now = new Date().toISOString();
 
-    return (data.features ?? []).map(
+    const features = (data.features ?? []).filter(
+      (f: { properties: Record<string, unknown>; geometry: { coordinates: number[] } }) =>
+        f.geometry.coordinates[0] !== 0 || f.geometry.coordinates[1] !== 0,
+    );
+
+    return features.map(
       (feature: {
         properties: Record<string, unknown>;
         geometry: { coordinates: number[] };

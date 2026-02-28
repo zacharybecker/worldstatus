@@ -1,7 +1,7 @@
 import type { WorldEvent } from '@/types/event';
 
 const NOAA_URL =
-  'https://api.weather.gov/alerts/active?status=actual&limit=50';
+  'https://api.weather.gov/alerts/active?status=actual';
 
 function mapSeverity(severity: string): number {
   switch (severity) {
@@ -31,7 +31,7 @@ export async function fetchNOAAAlerts(): Promise<WorldEvent[]> {
     const data = await res.json();
     const now = new Date().toISOString();
 
-    return (data.features ?? []).map(
+    return (data.features ?? []).slice(0, 50).map(
       (feature: {
         id: string;
         properties: Record<string, unknown>;
