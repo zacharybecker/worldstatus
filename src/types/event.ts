@@ -34,15 +34,6 @@ export interface EventFilter {
   timeRange: string;
 }
 
-export interface ClusteredEvent {
-  id: string;
-  latitude: number;
-  longitude: number;
-  count: number;
-  events: WorldEvent[];
-  topEvent: WorldEvent;
-}
-
 export const ALL_CATEGORIES: EventCategory[] = [
   'earthquake',
   'weather',

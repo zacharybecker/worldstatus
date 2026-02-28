@@ -50,13 +50,11 @@ interface EventStore {
   flyToTarget: { lat: number; lng: number; altitude: number } | null;
 
   setEvents: (events: WorldEvent[]) => void;
-  addEvents: (events: WorldEvent[]) => void;
   setSelectedEvent: (event: WorldEvent | null) => void;
   setDetailPanelOpen: (open: boolean) => void;
   toggleCategory: (category: EventCategory) => void;
   setCategories: (categories: EventCategory[]) => void;
   setSeverityRange: (range: [number, number]) => void;
-  setTimeRange: (range: string) => void;
   setLoading: (loading: boolean) => void;
   flyToEvent: (event: WorldEvent) => void;
   clearFlyTarget: () => void;
@@ -81,20 +79,6 @@ export const useEventStore = create<EventStore>((set) => ({
 
   setEvents: (events) =>
     set((state) => {
-      const filteredEvents = applyFilters(events, state.filters);
-      return {
-        events,
-        filteredEvents,
-        tickerEvents: computeTickerEvents(filteredEvents),
-        lastUpdated: new Date().toISOString(),
-      };
-    }),
-
-  addEvents: (newEvents) =>
-    set((state) => {
-      const existingKeys = new Set(state.events.map((e) => `${e.source}:${e.sourceId ?? e.id}`));
-      const unique = newEvents.filter((e) => !existingKeys.has(`${e.source}:${e.sourceId ?? e.id}`));
-      const events = [...state.events, ...unique];
       const filteredEvents = applyFilters(events, state.filters);
       return {
         events,
@@ -138,17 +122,6 @@ export const useEventStore = create<EventStore>((set) => ({
   setSeverityRange: (range) =>
     set((state) => {
       const filters = { ...state.filters, severityRange: range };
-      const filteredEvents = applyFilters(state.events, filters);
-      return {
-        filters,
-        filteredEvents,
-        tickerEvents: computeTickerEvents(filteredEvents),
-      };
-    }),
-
-  setTimeRange: (range) =>
-    set((state) => {
-      const filters = { ...state.filters, timeRange: range };
       const filteredEvents = applyFilters(state.events, filters);
       return {
         filters,
